@@ -23,9 +23,3 @@ Web-based Bible Application using Clojure and JSword
     mvn install -DskipTests=true
     #+END_SRC
 
-    Then get cljsword
-    #+BEGIN_SRC shell
-    git clone https://github.com/timotheosh/cljsword.git
-    cd cljsword
-    lein install
-    #+END_SRC
