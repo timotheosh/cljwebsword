@@ -9,7 +9,11 @@
                  [ring/ring-devel "1.6.3"]
                  [bidi "2.1.3"]
                  [liberator "0.15.1"]
-                 [enlive "1.1.6"]]
+                 [org.jdom/jdom2 "2.0.4"]
+                 [org.crosswire/jsword "2.1-SNAPSHOT"]]
+  :source-paths ["src/clj" "src/cljs" "src/cljc"]
+  :test-paths ["test/clj"]
+  :resource-paths ["resources" "target/cljsbuild"]
+  :target-path "target/%s/"
   :main ^:skip-aot cljwebsword.core
-  :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
