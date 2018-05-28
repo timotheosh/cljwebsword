@@ -35,8 +35,32 @@
     RestrictionType
     VerseRange]
    [org.crosswire.jsword.util
-    ConverterFactory])
+    ConverterFactory]
+   [org.crosswire.jsword.versification.system
+    Versifications])
   (:gen-class))
+
+(defn available-books
+  "Returns a list of available Book objects that are in the given categor.
+  'Biblical Texts'  for Bibles
+  'Commentaries' for Commentaries
+  'Dictionaries' for Dictionaries
+  'General Books' for Books"
+  [category]
+  (filter
+   (fn [x]
+     (= "Biblical Texts" (str (.getBookCategory (.getBookMetaData x)))))
+   (.getBooks (Books/installed))))
+
+(defn get-versification
+  "Returns a String representing the type of versification of a given text.
+  If versification is not specified for the given text, KJV is the default."
+  [text]
+  (let [ins (Versifications/instance)
+        v-type (.getVersification ins text)]
+    (if-not (nil? v-type)
+      (.getName v-type)
+      "KJV")))
 
 (def BIBLE_NAME (str "KJV"))
 
@@ -79,7 +103,7 @@
 (defn readStyledText
   "Obtain styled text (in this case HTML) for a book reference."
   [version reference keycount]
-  (let [styler (. ConverterFactory (getConverter))
+  (let [styler (ConverterFactory/getConverter)
         book (getBook version)
         osissep (getOsis version reference keycount)]
     (if osissep
@@ -139,7 +163,7 @@
               rankCount max]
           ;; TODO: Call java enum value
           ;; (.setOrdering tally (PassageTally$Order/TALLY))
-          (when [(and (> rankCount 0)
+          (when [(and (pos? rankCount)
                       (< rankCount total))]
             (doall (.trimRanges tally rankCount RestrictionType/NONE)
                    (println "Showing the first " rankCount

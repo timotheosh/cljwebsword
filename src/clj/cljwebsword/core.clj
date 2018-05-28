@@ -1,7 +1,14 @@
 (ns cljwebsword.core
+  (:require
+   [ring.adapter.jetty :as jetty]
+   [cljwebsword.handler :as handler])
   (:gen-class))
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Starts the web server"
   [& args]
-  (println "Hello, World!"))
+  (defonce server (jetty/run-jetty
+                   handler/dev-handler
+                   {:port 8880
+                    :send-server-version? false
+                    :join? false})))

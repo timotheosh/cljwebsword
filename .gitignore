@@ -10,6 +10,7 @@
 .idea
 
 # Clojure/Java artifacts
+.nrepl-history
 pom.xml
 pom.xml.asc
 *.jar
