@@ -62,6 +62,14 @@
       (.getName v-type)
       "KJV")))
 
+(defn get-books
+  "Returns a list of BibleBooks from a given version. The version must be
+  able to be retrieved from JSword's Versification class."
+  [version]
+  (let [ins (Versifications/instance)
+        v-type (.getVersification ins version)]
+    (map #(str %) (iterator-seq (.getBookIterator v-type)))))
+
 (def BIBLE_NAME (str "KJV"))
 
 (defn getBook
@@ -112,6 +120,11 @@
             direction (.isLeftToRight bmd)]
         (.setParameter htmlsep "direction" (if direction "ltr" "rtl"))
         (XMLUtil/writeToString htmlsep)))))
+
+(defn getHtml
+  "Return the passage in HTML"
+  [version reference]
+  (readStyledText version reference 100))
 
 (defn readDictionary
   "While Bible and Commentary are very similar, a Dictionary is read in
