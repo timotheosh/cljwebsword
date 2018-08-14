@@ -1,5 +1,5 @@
 * cljwebsword
-Web-based Bible Application using Clojure and JSword
+Web-based Bible Application using Clojure and JSword (Using Immutant)
 ** Installation
    TODO: Untested directions (THIS IS ALPHA SOFTWARE)
 *** You'll need:
@@ -22,4 +22,14 @@ Web-based Bible Application using Clojure and JSword
     git checkout v2.1
     mvn install -DskipTests=true
     #+END_SRC
+*** Clone this repo and then compile
+#+BEGIN_SRC shell
+git clone https://github.com/timotheosh/cljwebsword.git
+cd cljwebsword
+lein immutant war
+#+END_SRC
+*** Install war file in JBoss/Wildfly
+NOTE: Tested only in Wildfly
 
+The war file can be found under target/default/cljwebsword.war
+You will need a Crosswire Sword Installation with some texts already installed and accessible to the JBoss/Widlfly user.

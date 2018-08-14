@@ -1,5 +1,5 @@
 (ns cljwebsword.handler
-  (:require [ring.adapter.jetty :refer [run-jetty]]
+  (:require [immutant.web :as web]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.util.codec :refer [url-encode url-decode]]
             [ring.middleware.stacktrace :refer [wrap-stacktrace]]
@@ -11,11 +11,25 @@
   [elt col]
   (some #(= elt %) col))
 
-(def valid-versions
+(defn valid-resources
+  "Return a list of valid resources based on type in lookup. The path is
+  just used for how the resource will be accessed by this service."
+  [path lookup]
   (map
    (fn [%]
-     {:name (str %) :uri (str "bible/" (url-encode (.toLowerCase (str %))))})
-   (sword/available-books "Biblical Texts")))
+     {:name (str %) :description (.getName %)  :uri (str path "/" (url-encode (.toLowerCase (str %))))})
+   (sword/available-books lookup)))
+
+(def valid-bibles
+  (valid-resources "bible" "Biblical Texts"))
+
+(def valid-commentaries
+  (valid-resources "commentary" "Commentaries"))
+
+(def valid-versions
+  (concat
+   valid-bibles
+   valid-commentaries))
 
 (defn query-bible
   "Queries the Bible"
@@ -43,6 +57,23 @@
            [:body [:h1 "Sorry, Not Found"]
             [:p [:strong uri]]]])})
 
+(defn display-root
+  "Displays the web root of the service."
+  []
+  (try
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body (html [:html [:head [:title "cljwebsword"]]
+                  [:body [:h1 "cljwebsword"]
+                   [:h2 "Bibles"]
+                   [:ul
+                    (map (fn [x] [:li [:a {:href (:uri x)} (:description x)]])
+                         valid-bibles)]
+                   [:h2 "Commentaries"]
+                   [:ul
+                    (map (fn [x] [:li [:a {:href (:uri x)} (:description x)]])
+                         valid-commentaries)]]])}))
+
 (defn display-query
   "Displays the given query given as an associative array."
   [query]
@@ -61,9 +92,11 @@
   (let [uri (:uri request)]
     (let [method (:request-method request)
           query (check-path uri)]
-      (if-not (nil? query)
-        (display-query query)
-        (display-404 uri)))))
+      (if (= uri "/")
+        (display-root)
+        (if-not (nil? query)
+          (display-query query)
+          (display-404 uri))))))
 
 (def dev-handler
   (-> #'handler
@@ -72,4 +105,4 @@
 
 (defn run-dev-server
   [port]
-  (run-jetty dev-handler {:port port}))
+  (web/run dev-handler {:port port}))

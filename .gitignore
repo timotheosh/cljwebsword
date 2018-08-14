@@ -1,27 +1,12 @@
-# Emacs artifacts
-*~
-\#*
-.\#*
-
-# Vi(m) artifacts
-*.swp
-
-# Jetbrains artifacts
-.idea
-
-# Clojure/Java artifacts
-.nrepl-history
+/target
+/classes
+/checkouts
 pom.xml
 pom.xml.asc
 *.jar
 *.class
-/lib/
-/classes/
-/target/
-/checkouts/
-.lein-deps-sum
-.lein-repl-history
-.lein-plugins/
-.lein-failures
-.nrepl-port
-.cpcache/
+/.lein-*
+/.nrepl-port
+.hgignore
+.hg/
+sword/

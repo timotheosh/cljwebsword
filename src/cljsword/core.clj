@@ -1,4 +1,6 @@
 (ns cljsword.core
+  (:require [clojure.java.io :as io]
+            [clojurewerkz.propertied.properties :as props])
   (:import
    [org.crosswire.common.util
     NetUtil
@@ -20,6 +22,8 @@
     BooksEvent
     BooksListener
     OSISUtil]
+   [org.crosswire.jsword.book.sword
+    SwordBookPath]
    [org.crosswire.jsword.book.install
     InstallException
     InstallManager
@@ -40,6 +44,14 @@
     Versifications])
   (:gen-class))
 
+(defn set-sword-path
+  []
+  (let [sword-path
+        (get
+         (props/load-from (io/resource "cljwebsword.properties"))
+         "sword.home")]
+    (SwordBookPath/setAugmentPath (into-array [(io/file sword-path)]))))
+
 (defn available-books
   "Returns a list of available Book objects that are in the given categor.
   'Biblical Texts'  for Bibles
@@ -49,7 +61,7 @@
   [category]
   (filter
    (fn [x]
-     (= "Biblical Texts" (str (.getBookCategory (.getBookMetaData x)))))
+     (= category (str (.getBookCategory (.getBookMetaData x)))))
    (.getBooks (Books/installed))))
 
 (defn get-versification
@@ -94,17 +106,11 @@
   [version reference keycount]
   (when (and version reference)
     (let [book (getBook version)
-          vkey (if (.equals BookCategory/BIBLE (.getBookCategory book))
-                 (let [vkey (.getKey book reference)]
-                   (let [trimv (.trimVerses vkey keycount)]
-                     (if (nil? trimv)
-                       vkey
-                       trimv)))
-                 (let [vkey (.createEmptyKeyList book)]
-                   (for [ aKey (.getKey book reference)] ;; TODO: some clojure interop corrections are needed here!
-                     (when [(not (nil? aKey))]
-                       (.addAll vkey aKey)))
-                   vkey))
+          vkey (let [vkey (.getKey book reference)]
+                 (let [trimv (.trimVerses vkey keycount)]
+                   (if (nil? trimv)
+                     vkey
+                     trimv)))
           data (new BookData book vkey)]
       (.getSAXEventProvider data))))
 
