@@ -37,14 +37,19 @@
   (sword/readStyledText version reference 100))
 
 (defn check-path
-  [uri]
-  (let [path (vec (remove empty? (clojure.string/split uri #"/")))
+  "Returns a hash with query info for cljsword."
+  [request]
+  (let [uri (:uri request)
+        path (vec (remove empty? (clojure.string/split uri #"/")))
         start-path (str (first path) "/" (second path))]
     (when-not (nil? (member? start-path (vec (map #(:uri %) valid-versions))))
       (let [version (second path)]
         (if (> (count path) 2)
-          {:type (nth path 0) :version version :reference (url-decode (nth path 2))}
-          {:type (nth path 0) :version version :reference "Intro.Bible"})))))
+          {:type (nth path 0) :version version
+           :reference (url-decode (nth path 2))
+           :args (:query-string request)}
+          {:type (nth path 0) :version version
+           :reference "Intro.Bible"})))))
 
 (defn display-404
   "Displays the given query given as an associative array."
@@ -78,9 +83,14 @@
   "Displays the given query given as an associative array."
   [query]
   (try
-    {:status 200
-     :headers {"Content-Type" "text/html"}
-     :body (cljsword.core/getHtml (:version query) (:reference query))}
+    (cond (= (:args query) "txt")
+          {:status 200
+           :headers {"Content-Type" "text/plain"}
+           :body (cljsword.core/getText (:version query) (:reference query))}
+          :else
+          {:status 200
+           :headers {"Content-Type" "text/html"}
+           :body (cljsword.core/getHtml (:version query) (:reference query))})
     (catch org.crosswire.jsword.passage.NoSuchVerseException e
       {:status 510
        :headers {"Content-Type" "text/html"}
@@ -88,15 +98,21 @@
                     [:body [:h1 "Passage Not Found"]
                      [:p [:strong (.getMessage e)]]]])})))
 
+(defn request-info
+  "View the information contained in the request, useful for debugging"
+  [request]
+  {:status 200
+   :body (pr-str request)
+   :headers {}})
+
 (defn handler [request]
-  (let [uri (:uri request)]
-    (let [method (:request-method request)
-          query (check-path uri)]
-      (if (= uri "/")
-        (display-root)
-        (if-not (nil? query)
-          (display-query query)
-          (display-404 uri))))))
+  (let [uri (:uri request)
+        method (:request-method request)
+        query (check-path request)]
+    (cond (= uri "/") (display-root)
+          (= uri "/request-info") (request-info request)
+          (not (nil? query)) (display-query query)
+          :else (display-404 uri))))
 
 (def dev-handler
   (-> #'handler
