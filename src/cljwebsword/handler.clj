@@ -36,20 +36,35 @@
   [version reference]
   (sword/readStyledText version reference 100))
 
+(defn uri-minus-context
+  "Returns a given uri, minus the servlet context."
+  [request]
+  (if (:context request)
+    (clojure.string/replace (:uri request) (:context request) "")
+    (:uri request)))
+
 (defn check-path
   "Returns a hash with query info for cljsword."
   [request]
-  (let [uri (:uri request)
+  (println "REQUEST: " (str request))
+  (let [uri (uri-minus-context request)
         path (vec (remove empty? (clojure.string/split uri #"/")))
         start-path (str (first path) "/" (second path))]
     (when-not (nil? (member? start-path (vec (map #(:uri %) valid-versions))))
       (let [version (second path)]
         (if (> (count path) 2)
-          {:type (nth path 0) :version version
-           :reference (url-decode (nth path 2))
-           :args (:query-string request)}
-          {:type (nth path 0) :version version
-           :reference "Intro.Bible"})))))
+          (do
+            (println "RETURNING: " (str {:type (nth path 0) :version version
+                                         :reference (url-decode (nth path 2))
+                                         :args (:query-string request)}))
+            {:type (nth path 0) :version version
+             :reference (url-decode (nth path 2))
+             :args (:query-string request)})
+          (do
+            (println "RETURNING: " (str {:type (nth path 0) :version version
+                                         :reference "Intro.Bible"}))
+            {:type (nth path 0) :version version
+             :reference "Intro.Bible"}))))))
 
 (defn display-404
   "Displays the given query given as an associative array."
@@ -83,7 +98,11 @@
   "Displays the given query given as an associative array."
   [query]
   (try
-    (cond (= (:args query) "txt")
+    (cond (nil? (:reference query))
+          {:status 200
+           :headers {"Content-Type" "text/html"}
+           :body "No reference sent"}
+          (= (:args query) "txt")
           {:status 200
            :headers {"Content-Type" "text/plain"}
            :body (cljsword.core/getText (:version query) (:reference query))}

@@ -1,8 +1,9 @@
 (ns cljwebsword.servlet
   (:require [clojure.tools.logging :as log]
             [ring.util.servlet :refer [defservice]]
-            [cljwebsword.handler :as handler]))
-
+            [cljwebsword.handler :as handler]
+            [hiccup.core :refer [html]]
+            ))
 
 (def ^:dynamic *app-context* nil)
 
@@ -22,25 +23,42 @@
           handler))))
 
 (defn url-in-context [url]
-  (str *app-context* url))
+  (clojure.string/replace (str *app-context* url) #"[/]+" "/"))
 
-(defn minus-context
-  "Safely returns the uri without the context."
-  [uri]
-  (let [context "/cljwebsword/"]
-    (if (>= (count context) (count uri))
-      "/"
-      (subs uri (count context)))))
+(defn show-data [data]
+  {:status 200
+   :headers {}
+   :body (str data)})
+
+(defn test-request [request]
+  {:status 200
+   :body (pr-str request)
+   :headers {}})
+
+(defn display-404
+  "Displays the given query given as an associative array."
+  [query]
+  {:status 404
+   :headers {"Content-Type" "text/html"}
+   :body (html
+          [:html
+           [:head [:title "Not Found"]]
+           [:body [:h1 "Sorry, Not Found"]
+            [:p [:strong (str query)]]]])})
 
 (defn handle-request [request]
-  (let [uri (minus-context (:uri request))]
-    (let [method (:request-method request)
-          query (handler/check-path uri)]
-      (if (= uri "/")
-        (handler/display-root)
-        (if-not (nil? query)
-          (handler/display-query query)
-          (handler/display-404 uri))))))
+  (let [data {:uri (:uri request)
+              :context (:context request)
+              :query-string (:query-string request)}
+        uri (handler/uri-minus-context request)
+        method (:request-method request)
+        query (handler/check-path data)]
+    (println "QUERY-DATA: " (str data))
+    (println "QUERY: " (str query))
+    (println "URI: " (str uri))
+    (cond (= uri "/") (handler/display-root)
+          query (handler/display-query query)
+          :else (handler/display-404 query))))
 
 (def handler
   (-> #'handle-request
