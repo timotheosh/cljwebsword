@@ -9,7 +9,7 @@
 (defn -main
   "Starts the web server"
   [& args]
-  (cljsword/set-sword-path)
+  (cljsword/set-sword-path "/usr/share/sword/")
   (defonce server (web/run
                     servlet/handler
                     {:port 3880

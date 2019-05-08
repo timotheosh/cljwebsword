@@ -2,8 +2,7 @@
   (:require [bidi.ring :refer [make-handler]]
             [liberator.core :refer [defresource resource]]
             [liberator.representation :refer [ring-response]]
-            [hiccup.core :refer [html]]
-            [cljsword.core :as cljsword]))
+            [hiccup.core :refer [html]]))
 
 (defn layout-page
   [req title message]

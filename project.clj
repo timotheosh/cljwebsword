@@ -14,9 +14,7 @@
                  [bidi "2.1.3"]
                  [liberator "0.15.2"]
                  [hiccup "1.0.5"]
-                 [clojurewerkz/propertied "1.3.0"]
-                 [org.jdom/jdom2 "2.0.4"]
-                 [org.crosswire/jsword "2.1-SNAPSHOT"]]
+                 [cljsword "0.2.0-SNAPSHOT"]]
   :main ^:skip-aot cljwebsword.core
   :plugins [[lein-ring "0.12.4"]
             [lein-immutant "2.1.0"]]

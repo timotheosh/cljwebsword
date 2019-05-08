@@ -2,8 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [ring.util.servlet :refer [defservice]]
             [cljwebsword.handler :as handler]
-            [hiccup.core :refer [html]]
-            ))
+            [hiccup.core :refer [html]]))
 
 (def ^:dynamic *app-context* nil)
 

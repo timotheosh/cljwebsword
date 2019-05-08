@@ -34,7 +34,7 @@
 (defn query-bible
   "Queries the Bible"
   [version reference]
-  (sword/readStyledText version reference 100))
+  (sword/read-styled-text version reference 100))
 
 (defn uri-minus-context
   "Returns a given uri, minus the servlet context."
@@ -105,11 +105,11 @@
           (= (:args query) "txt")
           {:status 200
            :headers {"Content-Type" "text/plain"}
-           :body (cljsword.core/getText (:version query) (:reference query))}
+           :body (cljsword.core/get-text (:version query) (:reference query))}
           :else
           {:status 200
            :headers {"Content-Type" "text/html"}
-           :body (cljsword.core/getHtml (:version query) (:reference query))})
+           :body (cljsword.core/get-html (:version query) (:reference query))})
     (catch org.crosswire.jsword.passage.NoSuchVerseException e
       {:status 510
        :headers {"Content-Type" "text/html"}
